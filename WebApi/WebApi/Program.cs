@@ -12,11 +12,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionStrings")));
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddTransient<IIncomeOperationService, IncomeOperationService>();
-builder.Services.AddTransient<IIncomeTypeService, IncomeTypeService>();
-builder.Services.AddTransient<IExpenseOperationService, ExpenseOperationService>();
-builder.Services.AddTransient<IExpenseTypeService, ExpenseTypeService>();
-builder.Services.AddTransient<IReportService, ReportService>();
+builder.Services.AddScoped<IIncomeOperationService, IncomeOperationService>();
+builder.Services.AddScoped<IIncomeTypeService, IncomeTypeService>();
+builder.Services.AddScoped<IExpenseOperationService, ExpenseOperationService>();
+builder.Services.AddScoped<IExpenseTypeService, ExpenseTypeService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 var app = builder.Build();
 
