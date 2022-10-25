@@ -6,8 +6,8 @@ namespace Core
     {
         public AppDbContext(DbContextOptions options) : base(options) { }
 
-        DbSet<IncomeOperation> IncomeOperations { get; set; }
-        DbSet<ExpenseOperation> ExpenseOperations { get; set; }
+        DbSet<Operation> Operations { get; set; }
+        DbSet<OperationType> OperationTypes { get; set; }
 
     }
 }

@@ -1,19 +1,19 @@
-﻿using Core;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Core;
 
 namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class IncomeOperationsController : ControllerBase
+    public class OperationsController : ControllerBase
     {
-        private readonly IIncomeOperationService _service;
+        private readonly IOperationService _service;
 
-        public IncomeOperationsController(IIncomeOperationService service)
+        public OperationsController(IOperationService service)
         {
             _service = service;
         }
-
 
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -32,6 +32,20 @@ namespace WebApi.Controllers
             return Ok(item);
         }
 
+        [HttpGet("IncomeOperations")]
+        public async Task<IActionResult> GetIncomeOperations()
+        {
+            var items = await _service.GetOperationsByType(true);
+            return Ok(items);
+        }
+
+        [HttpGet("ExpenseOperations")]
+        public async Task<IActionResult> GetExpenseOperations()
+        {
+            var items = await _service.GetOperationsByType(false);
+            return Ok(items);
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -40,7 +54,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] IncomeOperationDto item)
+        public async Task<IActionResult> Post([FromBody] OperationDto item)
         {
             var newItem = await _service.CreateAsync(item);
             if (newItem == null) return BadRequest();
@@ -48,7 +62,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] IncomeOperationDto item)
+        public async Task<IActionResult> Put(int id, [FromBody] OperationDto item)
         {
             if (id != item.Id) return BadRequest();
             if (!await _service.UpdateAsync(id, item)) return NotFound();

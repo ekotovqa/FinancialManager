@@ -1,19 +1,19 @@
-﻿using Core;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Core;
 
 namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ExpenseTypesController : ControllerBase
+    public class OperationTypesController : ControllerBase
     {
-        private readonly IExpenseTypeService _service;
+        private readonly IOperationTypeService _service;
 
-        public ExpenseTypesController(IExpenseTypeService service)
+        public OperationTypesController(IOperationTypeService service)
         {
             _service = service;
         }
-
 
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -32,15 +32,29 @@ namespace WebApi.Controllers
             return Ok(item);
         }
 
-        [HttpGet]
-        [Route("/api/[controller]/{id}/ExpenseOperations")]
-        public async Task<IActionResult> GetExpenseTypeOperations(int id)
+        [HttpGet("IncomeTypes")]
+        public async Task<IActionResult> GetAllIncomeTypes()
         {
-            var operations = await _service.GetExpenseTypeOperations(id);
+            var items = await _service.GetAllAsync();
+            return Ok(items.Where(n => n.IsIncome));
+        }
+
+        [HttpGet("ExpenseTypes")]
+        public async Task<IActionResult> GetAllExpenseTypes()
+        {
+            var items = await _service.GetAllAsync();
+            return Ok(items.Where(n => !n.IsIncome));
+        }
+
+        [HttpGet("{id}/Operations")]
+        public async Task<IActionResult> GetOperations(int id)
+        {
+            var operations = await _service.GetOperations(id);
             if (operations == null || operations.Count <= 0)
                 return NotFound();
             return Ok(operations);
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -50,17 +64,18 @@ namespace WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ExpenseTypeDto item)
+        public async Task<IActionResult> Post([FromBody] OperationTypeDto item)
         {
             var newItem = await _service.CreateAsync(item);
+            if (newItem == null) return BadRequest();
             return CreatedAtAction(nameof(GetById), new { id = newItem.Id }, newItem);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] ExpenseTypeDto item)
+        public async Task<IActionResult> Put(int id, [FromBody] OperationTypeDto item)
         {
             if (id != item.Id) return BadRequest();
-            if(!await _service.UpdateAsync(id, item)) return NotFound();
+            if (!await _service.UpdateAsync(id, item)) return NotFound();
             return NoContent();
         }
     }

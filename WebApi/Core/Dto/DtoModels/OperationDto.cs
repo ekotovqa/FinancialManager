@@ -2,7 +2,7 @@
 
 namespace Core
 {
-    public class IncomeOperationDto
+    public class OperationDto
     {
         public int Id { get; set; }
 
@@ -16,6 +16,6 @@ namespace Core
         public decimal Sum { get; set; }
 
         [Required]
-        public int IncomeTypeId { get; set; }
+        public int OperationTypeId { get; set; }
     }
 }

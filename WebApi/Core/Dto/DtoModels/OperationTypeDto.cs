@@ -2,11 +2,14 @@
 
 namespace Core
 {
-    public class ExpenseTypeDto
-    {
+    public class OperationTypeDto
+    {       
         public int Id { get; set; }
 
         [Required]
         public string Name { get; set; }
+
+        [Required]
+        public bool IsIncome { get; set; }
     }
 }

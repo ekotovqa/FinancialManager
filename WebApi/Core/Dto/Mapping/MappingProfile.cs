@@ -6,15 +6,11 @@ namespace Core
     {
         public MappingProfile()
         {
-            CreateMap<IncomeOperation, IncomeOperationDto>();
-            CreateMap<ExpenseOperation, ExpenseOperationDto>();
-            CreateMap<IncomeType, IncomeTypeDto>();
-            CreateMap<ExpenseType, ExpenseTypeDto>();
+            CreateMap<OperationDto, Operation>();
+            CreateMap<OperationTypeDto, OperationType>();
 
-            CreateMap<IncomeOperationDto, IncomeOperation>();
-            CreateMap<ExpenseOperationDto, ExpenseOperation>();
-            CreateMap<IncomeTypeDto, IncomeType>();
-            CreateMap<ExpenseTypeDto, ExpenseType>();
+            CreateMap<Operation, OperationDto>();
+            CreateMap<OperationType, OperationTypeDto>();
         }
     }
 }

@@ -15,30 +15,32 @@ namespace Core
         }
         public async Task<DailyReport> GetDailyReport(DateTime reportDate)
         {
-            var incomeOperations = _mapper.Map<List<IncomeOperationDto>>(await _context.Set<IncomeOperation>().Where(n => n.Date == reportDate).ToListAsync());
-            var expenseOperations = _mapper.Map<List<ExpenseOperationDto>>(await _context.Set<ExpenseOperation>().Where(n => n.Date == reportDate).ToListAsync());
+            IQueryable<Operation> query = _context.Set<Operation>();
+            var incomeOperations = query.Where(n => n.Date.Date == reportDate.Date & n.OperationType.IsIncome);
+            var expenseOperations = query.Where(n => n.Date.Date == reportDate.Date & !n.OperationType.IsIncome);
             return new DailyReport()
             {
                 ReportDate = reportDate,
-                IncomeOperations = incomeOperations,
-                ExpenseOperations = expenseOperations,
                 TotalExpense = expenseOperations.Sum(n => n.Sum),
-                TotalIncome = incomeOperations.Sum(n => n.Sum)
+                TotalIncome = incomeOperations.Sum(n => n.Sum),
+                IncomeOperations = _mapper.Map<List<OperationDto>>(await incomeOperations.ToListAsync()),
+                ExpenseOperations = _mapper.Map<List<OperationDto>>(await expenseOperations.ToListAsync()),
             };
         }
 
         public async Task<PeriodReport> GetPeriodReport(DateTime startDate, DateTime endDate)
         {
-            var incomeOperations = _mapper.Map<List<IncomeOperationDto>>(await _context.Set<IncomeOperation>().Where(n => (n.Date >= startDate && n.Date <= endDate)).ToListAsync());
-            var expenseOperations = _mapper.Map<List<ExpenseOperationDto>>(await _context.Set<ExpenseOperation>().Where(n => (n.Date >= startDate && n.Date <= endDate)).ToListAsync());
+            IQueryable<Operation> query = _context.Set<Operation>();
+            var incomeOperations = query.Where(n => (n.Date.Date >= startDate.Date && n.Date.Date <= endDate.Date) & n.OperationType.IsIncome);
+            var expenseOperations = query.Where(n => (n.Date.Date >= startDate.Date && n.Date.Date <= endDate.Date) & !n.OperationType.IsIncome);
             return new PeriodReport()
             {
                 StartDate = startDate,
                 EndDate = endDate,
-                IncomeOperations = incomeOperations,
-                ExpenseOperations = expenseOperations,
                 TotalExpense = expenseOperations.Sum(n => n.Sum),
-                TotalIncome = incomeOperations.Sum(n => n.Sum)
+                TotalIncome = incomeOperations.Sum(n => n.Sum),
+                IncomeOperations = _mapper.Map<List<OperationDto>>(await incomeOperations.ToListAsync()),
+                ExpenseOperations = _mapper.Map<List<OperationDto>>(await expenseOperations.ToListAsync()),
             };
         }
     }
