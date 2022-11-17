@@ -1,0 +1,162 @@
+﻿@page "/"
+@using System.Globalization
+@inject IReportService _reportService
+
+<PageTitle>Index</PageTitle>
+
+<h2>Reports</h2>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <h5 class="card-header text-center">
+                Daily Report
+            </h5>
+            <div class="card-body">
+                <div>
+                    <label class="fw-bold">Total Earning: @_dailyReport.TotalIncome.ToString("C2", CultureInfo.CreateSpecificCulture("us-US"))</label>
+                </div>
+                <div>
+                    <label class="fw-bold">Total Expense: @_dailyReport.TotalExpense.ToString("C2", CultureInfo.CreateSpecificCulture("us-US"))</label>
+                </div>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(_dailyReport.IncomeOperations != null & _dailyReport.ExpenseOperations != null)
+                        {
+                            if(_dailyReport.IncomeOperations.Count() == 0 & _dailyReport.ExpenseOperations.Count() == 0)
+                            {
+                                <tr><td colspan="3"><em>No Data</em></td></tr>
+                            }
+                            foreach(var item in _dailyReport.IncomeOperations)
+                            {
+                                <tr>
+                                    <td>@item.Date.ToString("d")</td>
+                                    <td>@item.Description</td>
+                                    <td>@item.Sum.ToString("C2", CultureInfo.CreateSpecificCulture("us-US"))</td>
+                                </tr>
+                            }
+                            @foreach(var item in _dailyReport.ExpenseOperations)
+                            {
+                                <tr>
+                                    <td>@item.Date.ToString("d")</td>
+                                    <td>@item.Description</td>
+                                    <td>-@item.Sum.ToString("C2", CultureInfo.CreateSpecificCulture("us-US"))</td>
+                                </tr>
+                            }
+                        }
+                        
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <EditForm Model="@_dailyReport">
+                    <div class="mb-3 row">
+                        <label>Select Report Date</label>
+                        <div class="col-sm-10">                            
+                            <InputDate class="form-control" id="dateInput" @bind-Value="_dailyReport.ReportDate"/>
+                        </div> 
+                        <div class="col-sm-2">
+                            <button class="btn btn-primary" type="button" id="button-get" @onclick="GetDailyReport">Get Report</button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <h5 class="card-header text-center">
+                Period Report
+            </h5>
+            <div class="card-body">
+                <div>
+                    <label class="fw-bold">Total Earning: @_periodReport.TotalIncome.ToString("C2", CultureInfo.CreateSpecificCulture("us-US"))</label>
+                </div>
+                <div>
+                    <label class="fw-bold">Total Expense: @_periodReport.TotalExpense.ToString("C2", CultureInfo.CreateSpecificCulture("us-US"))</label>
+                </div>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(_periodReport.IncomeOperations != null & _periodReport.ExpenseOperations != null)
+                        {
+                            if(_periodReport.IncomeOperations.Count() == 0 & _periodReport.ExpenseOperations.Count() == 0)
+                            {
+                                <tr><td colspan="3"><em>No Data</em></td></tr>
+                            }
+                            foreach(var item in _periodReport.IncomeOperations)
+                            {
+                                <tr>
+                                    <td>@item.Date.ToString("d")</td>
+                                    <td>@item.Description</td>
+                                    <td>@item.Sum.ToString("C2", CultureInfo.CreateSpecificCulture("us-US"))</td>
+                                </tr>
+                            }
+                            @foreach(var item in _periodReport.ExpenseOperations)
+                            {
+                                <tr>
+                                    <td>@item.Date.ToString("d")</td>
+                                    <td>@item.Description</td>
+                                    <td>-@item.Sum.ToString("C2", CultureInfo.CreateSpecificCulture("us-US"))</td>
+                                </tr>
+                            }
+                        }                       
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <EditForm Model="@_periodReport" OnValidSubmit="GetPeriodReport">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+                    <div class="row">
+                        <div class="col-sm-5">                            
+                            <label>Select Start Report Date</label>
+                        </div>
+                        <div class="col-sm-5">                            
+                            <label>Select End Report Date</label>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">                      
+                        <div class="col-sm-5">                            
+                            <InputDate class="form-control" id="dateInput" @bind-Value="_periodReport.StartDate"/>
+                        </div>
+                        <div class="col-sm-5">                            
+                            <InputDate class="form-control" id="dateInput" @bind-Value="_periodReport.EndDate"/>
+                        </div> 
+                        <div class="col-sm-2">
+                            <button type="submit" class="btn btn-primary" id="button-get">Get Report</button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private DailyReport _dailyReport  = new DailyReport() { ReportDate = DateTime.Today, TotalIncome = 0, TotalExpense = 0 };
+    private PeriodReport _periodReport  = new PeriodReport() { StartDate = DateTime.Today.AddDays(-7), EndDate = DateTime.Today, TotalIncome = 0, TotalExpense = 0 };
+
+    private async Task GetDailyReport()
+    {
+        _dailyReport = await _reportService.GetDailyReport(_dailyReport);
+    }
+
+    private async Task GetPeriodReport()
+    {
+        _periodReport = await _reportService.GetPeriodReport(_periodReport);
+    }
+}

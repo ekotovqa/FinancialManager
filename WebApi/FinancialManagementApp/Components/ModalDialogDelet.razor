@@ -1,0 +1,35 @@
+﻿<div class="modal fade show" id="modalDelet" style="display:block; background-color: rgba(10,10,10,.8);" aria-modal="true" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Do you want to delete?</h4>
+                <button type="button" class="btn-close" @onclick="ModalCancel"></button>
+            </div>
+            <div class="modal-body">
+                <p>@EntityNameToDelet</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary btn-sm" @onclick="ModalOk">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+
+    [Parameter]
+    public string EntityNameToDelet { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnClose { get; set; }
+
+    private async Task ModalCancel()
+    {
+        await OnClose.InvokeAsync(false);
+    }
+
+    private async Task ModalOk()
+    {
+        await OnClose.InvokeAsync(true);
+    }
+}
