@@ -50,7 +50,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetOperations(int id)
         {
             var operations = await _service.GetOperations(id);
-            if (operations == null || operations.Count <= 0)
+            if (operations == null)
                 return NotFound();
             return Ok(operations);
         }

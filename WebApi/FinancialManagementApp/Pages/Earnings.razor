@@ -1,0 +1,10 @@
+﻿@page "/earnings"
+@using FinancialManagementApp.Components;
+
+<h2>Earnings</h2>
+
+<OperationsListComponent TableTitle="@pageTitle" IsEarningsOperationsPage=@true></OperationsListComponent>
+
+@code {
+    public string pageTitle = "Earnings";
+}

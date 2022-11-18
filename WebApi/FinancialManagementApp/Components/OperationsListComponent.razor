@@ -1,0 +1,154 @@
+﻿@using FinancialManagementApp.Components;
+@using System.Globalization
+@inject IOperationTypeService _operationTypeService
+@inject IOperationService _operationService
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                @TableTitle Operations
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (_operations == null)
+                        {
+                            <tr><td colspan="5"><em>Loading ...</em></td></tr>
+                        }
+                        else if (_operations.Count() == 0)
+                        {
+                            <tr><td colspan="5"><em>Add Operation</em></td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var operation in _operations)
+                            {
+                                <tr>
+                                    <td>@operation.Date.ToShortDateString()</td>
+                                    <td>@OperationsList.First(n => n.Id == operation.OperationTypeId).Name</td>
+                                    <td>@operation.Description</td>
+                                    <td>@operation.Sum.ToString("C2", CultureInfo.CreateSpecificCulture("us-US"))</td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm" @onclick = "() => OpenDeletDialog(operation)">Delete</button>
+                                        <button type="button" class="btn btn-success btn-sm"@onclick = "() => OpenEditDialog(operation)">Edit</button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <AddOperationForm CardHeaderTitle="@AddFormTitle" OperationTypes=@OperationsList IsEarningsOperationsPage=@IsEarningsOperationsPage OnSubmitCallback=@Refresh></AddOperationForm>
+    </div>
+</div>
+@if (DeletDialogOpen)
+{
+    <ModalDialogDelet EntityNameToDelet=@_operationToAction.Description OnClose="OnDeletDialogClose"></ModalDialogDelet>
+}
+@if (EditDialogOpen)
+{
+    <ModalDialogEditOperation Operation=@_operationToAction OnClose="OnEditDialogClose"></ModalDialogEditOperation>
+}
+
+@code {
+    [Parameter]
+    public string TableTitle { get; set; }
+
+    [Parameter]
+    public IEnumerable<OperationTypeViewModel> OperationsList { get; set; }
+
+    [Parameter]
+    public bool IsEarningsOperationsPage { get; set; }
+
+    public bool DeletDialogOpen { get; set; }
+    public bool EditDialogOpen { get; set; }
+    public string AddFormTitle => $"Add {TableTitle.Remove(TableTitle.Length-1)} Operation";
+    private IEnumerable<OperationViewModel> _operations = null;
+    private OperationViewModel _operationToAction;
+
+    private void OpenDeletDialog(OperationViewModel operation)
+    {
+        _operationToAction = operation;
+        DeletDialogOpen = true;
+        StateHasChanged();
+    }
+
+    private void OpenEditDialog(OperationViewModel operation)
+    {
+        _operationToAction = operation;
+        EditDialogOpen = true;
+        StateHasChanged();
+    }
+
+    private async Task OnDeletDialogClose(bool accepted)
+    {
+        if (accepted)
+        {
+            await _operationService.DeleteAsync("Operations", _operationToAction);
+            await LoadData();
+            _operationToAction = null;
+        }
+        DeletDialogOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task OnEditDialogClose(bool accepted)
+    {
+        if (accepted)
+        {
+            await _operationService.PutAsync("Operations", _operationToAction);
+            await LoadData();
+            _operationToAction = null;
+        }
+        EditDialogOpen = false;
+        await Refresh();
+    }
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+        if(IsEarningsOperationsPage) 
+            OperationsList = await _operationTypeService.GetAsync("OperationTypes/IncomeTypes");
+        else
+            OperationsList = await _operationTypeService.GetAsync("OperationTypes/ExpenseTypes");
+        await base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        if(IsEarningsOperationsPage)
+        {
+            _operations = await _operationService.GetAsync("Operations/IncomeOperations");
+            OperationsList = await _operationTypeService.GetAsync("OperationTypes/IncomeTypes");
+        }
+        else
+        {
+            _operations = await _operationService.GetAsync("Operations/ExpenseOperations");
+            OperationsList = await _operationTypeService.GetAsync("OperationTypes/ExpenseTypes");
+        } 
+        StateHasChanged();
+    }
+
+    public async Task Refresh()
+    {
+        await LoadData();
+    }
+}

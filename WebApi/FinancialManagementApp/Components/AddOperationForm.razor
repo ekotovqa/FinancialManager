@@ -1,0 +1,118 @@
+﻿@inject IOperationService _operationService
+
+<div class="card">
+    <div class="card-header">
+        @CardHeaderTitle
+    </div>
+    <div class="card-body">
+        <EditForm Model="@_operation" OnValidSubmit="@HandleValidSubmit">
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
+            <div class="mb-3">
+                <label for="operationTypeInput" class="form-label">Category</label>
+                <div class="input-group mb-3">
+                    <InputSelect class="form-select" id="operationTypeInput" @bind-Value="_operation.OperationTypeId">
+                        @if(OperationTypes.Count() > 0)
+                        {
+                            <option value=0>Select Category</option>
+                        }
+                        else
+                        {
+                            <option value=0>Add Category</option>
+                        }
+                        @{
+                            foreach(var item in OperationTypes)
+                            {
+                                <option value=@item.Id>@item.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                    <button class="btn btn-outline-primary" type="button" id="button-add" @onclick="OpenAddCategoryDialog">Add</button>
+                    <button class="btn btn-outline-success" type="button" id="button-edit" disabled="@_buttonEditDisabled" 
+                        @onclick="() => OpenEditCategoryDialog(OperationTypes.First(n => n.Id ==_operation.OperationTypeId))">Edit
+                    </button>
+                </div>                              
+            </div>
+            <div class="mb-3">
+                <label for="dateInput" class="form-label">Date</label>
+                <InputDate class="form-control" id="dateInput" @bind-Value="_operation.Date"/>
+            </div>
+            <div class="mb-3">
+                <label for="descriptionInput" class="form-label">Description</label>
+                <InputText class="form-control" id="descriptionInput" @bind-Value="_operation.Description"/>
+                <small id="descriptionInput" class="form-text text-muted">
+                Enter a description of the operation.
+                </small>
+            </div>
+            <div class="mb-3">
+                <label for="amountInput" class="form-label">Amount</label>
+                <InputNumber class="form-control" id="amountInput" @bind-Value="_operation.Sum"/>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Add</button>
+            </div>       
+        </EditForm>
+    </div>
+</div>
+@if(AddCategoryDialogOpen)
+{
+    <ModalDialogAddCategory IsIncomeTypeOperation=@true OnClose="CloseModalDialog" OnSubmitCallback="Refresh"></ModalDialogAddCategory>
+}
+@if(EditCategoryDialogOpen)
+{
+    <ModalDialogEditCategory OperationType="_operationTypeToEdit" OnClose="CloseModalDialog" ActionCallback="Refresh"></ModalDialogEditCategory>
+}
+
+@code {
+    [Parameter]
+    public string CardHeaderTitle { get; set; }
+
+    [Parameter]
+    public IEnumerable<OperationTypeViewModel>? OperationTypes { get; set; }
+
+    [Parameter]
+    public EventCallback OnSubmitCallback { get; set; }
+
+    [Parameter]
+    public bool IsEarningsOperationsPage { get; set; }
+
+    public bool AddCategoryDialogOpen { get; set; }
+    public bool EditCategoryDialogOpen { get; set; } 
+
+    private OperationViewModel _operation = new OperationViewModel() { Date = DateTime.Today.Date };
+
+    private bool _buttonEditDisabled => _operation.OperationTypeId == 0 ? true : false;
+
+    private OperationTypeViewModel _operationTypeToEdit;
+
+    private void OpenAddCategoryDialog()
+    {      
+        AddCategoryDialogOpen = true;
+    }
+
+    private async Task CloseModalDialog()
+    {
+        await Refresh();
+    }
+
+    private void OpenEditCategoryDialog(OperationTypeViewModel operationTypeToEdit)
+    {
+        _operationTypeToEdit = operationTypeToEdit;
+        EditCategoryDialogOpen = true;
+    }
+
+    public async Task HandleValidSubmit()
+    {
+        await _operationService.PostAsync("Operations", _operation);
+        _operation = new OperationViewModel() { Date = DateTime.Today.Date };
+        await Refresh();
+    }
+
+    public async Task Refresh()
+    {
+        EditCategoryDialogOpen = false;
+        AddCategoryDialogOpen = false;
+        StateHasChanged();
+        await OnSubmitCallback.InvokeAsync();
+    }
+}

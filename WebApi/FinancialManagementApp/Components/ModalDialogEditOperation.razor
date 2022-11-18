@@ -1,0 +1,53 @@
+﻿@inject IOperationService _operationService
+
+<div class="modal fade show" id="modalDelet" style="display:block; background-color: rgba(10,10,10,.8);" aria-modal="true" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Operation</h4>
+                <button type="button" class="btn-close" @onclick="ModalCancel"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@Operation" OnValidSubmit="@HandleValidSave">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+            <div class="mb-3">
+                <label for="dateInput" class="form-label">Date</label>
+                <InputDate class="form-control" id="dateInput" @bind-Value="Operation.Date"/>
+            </div>
+            <div class="mb-3">
+                <label for="descriptionInput" class="form-label">Description</label>
+                <InputText class="form-control" id="descriptionInput" @bind-Value="Operation.Description"/>
+            </div>
+            <div class="mb-3">
+                <label for="amountInput" class="form-label">Amount</label>
+                <InputNumber class="form-control" id="amountInput" @bind-Value="Operation.Sum"/>
+            </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    </div>
+                </EditForm>                 
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public EventCallback<bool> OnClose { get; set; }
+
+    [Parameter]
+    public OperationViewModel Operation { get; set; }
+
+    public async Task HandleValidSave()
+    {
+        await _operationService.PutAsync("Operations", Operation);
+        await OnClose.InvokeAsync(true);
+    }
+
+    private async Task ModalCancel()
+    {
+        await OnClose.InvokeAsync(false);
+    }
+}
