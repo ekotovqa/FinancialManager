@@ -56,7 +56,7 @@
 </div>
 @if(AddCategoryDialogOpen)
 {
-    <ModalDialogAddCategory IsIncomeTypeOperation=@true OnClose="CloseModalDialog" OnSubmitCallback="Refresh"></ModalDialogAddCategory>
+    <ModalDialogAddCategory IsIncomeTypeOperation=@IsEarningsOperationsPage OnClose="CloseModalDialog" OnSubmitCallback="Refresh"></ModalDialogAddCategory>
 }
 @if(EditCategoryDialogOpen)
 {

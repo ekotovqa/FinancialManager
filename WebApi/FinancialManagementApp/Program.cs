@@ -10,8 +10,9 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<IOperationService, OperationService>();
 builder.Services.AddScoped<IOperationTypeService, OperationTypeService>();
 builder.Services.AddScoped<IReportService, ReportService>();
-var DefaultApi = builder.Configuration.GetValue<string>("ApiUrl:DefaultApi");
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(DefaultApi) });
+var LocalApi = builder.Configuration.GetValue<string>("ApiUrl:LocalApi");
+var AzureApi = builder.Configuration.GetValue<string>("ApiUrl:AzureApi");
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(AzureApi) });
 
 var app = builder.Build();
 
